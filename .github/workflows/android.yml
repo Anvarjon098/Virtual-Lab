@@ -2,8 +2,11 @@ name: Android APK
 
 on:
   push:
-    branches: [main, android-apk]
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write   # Releases sahifasiga APK yuklash uchun
 
 jobs:
   build:
@@ -24,9 +27,16 @@ jobs:
         working-directory: android
         run: |
           gradle assembleDebug --no-daemon
-          mv app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/Qurilish Lab.apk"
+          mv app/build/outputs/apk/debug/app-debug.apk ../Qurilish-Lab.apk
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Qurilish Lab
-          path: android/app/build/outputs/apk/debug/Qurilish Lab.apk
+      # APK zip'siz, to'g'ridan-to'g'ri .apk fayl sifatida Releases'ga qo'yiladi.
+      # Doimiy havola: https://github.com/<owner>/<repo>/releases/latest/download/Qurilish-Lab.apk
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" Qurilish-Lab.apk \
+            --title "Qurilish Lab $TAG" \
+            --notes "Android uchun Qurilish Lab ilovasi. Qurilish-Lab.apk faylini telefonga yuklab oling va o'rnating." \
+            --latest

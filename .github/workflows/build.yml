@@ -1,0 +1,84 @@
+name: Build (Android APK + Windows EXE)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # Releases sahifasiga fayllarni yuklash uchun
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          gradle assembleDebug --no-daemon
+          mv app/build/outputs/apk/debug/app-debug.apk ../Qurilish-Lab.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: Qurilish-Lab.apk
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install pywebview pyinstaller pillow
+          python desktop/make_icon.py desktop/icon.ico
+          pyinstaller --noconfirm --onefile --windowed `
+            --name Qurilish-Lab `
+            --icon desktop/icon.ico `
+            --add-data "static;static" `
+            desktop/desktop.py
+          Move-Item dist/Qurilish-Lab.exe Qurilish-Lab.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: exe
+          path: Qurilish-Lab.exe
+
+  # Ikkala fayl zip'siz, to'g'ridan-to'g'ri Releases'ga qo'yiladi. Doimiy havolalar:
+  #   https://github.com/<owner>/<repo>/releases/latest/download/Qurilish-Lab.apk
+  #   https://github.com/<owner>/<repo>/releases/latest/download/Qurilish-Lab.exe
+  release:
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" Qurilish-Lab.apk Qurilish-Lab.exe \
+            --repo "${{ github.repository }}" \
+            --title "Qurilish Lab $TAG" \
+            --notes "Qurilish Lab: Qurilish-Lab.apk - Android telefonlar uchun, Qurilish-Lab.exe - Windows kompyuterlar uchun." \
+            --latest

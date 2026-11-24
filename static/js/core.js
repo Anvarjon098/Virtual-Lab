@@ -482,7 +482,11 @@ VL.printHTML = function (html) {
   const area = document.getElementById('print-area');
   area.innerHTML = html;
   document.body.classList.add('printing');
-  setTimeout(() => { window.print(); document.body.classList.remove('printing'); }, 50);
+  setTimeout(() => {
+    // Android ilovasida: tizimning chop etish / PDF oynasi ('printing' klassini ilova o'zi olib tashlaydi)
+    if (window.AndroidApp) { window.AndroidApp.print(); return; }
+    window.print(); document.body.classList.remove('printing');
+  }, 50);
 };
 VL.reportHTML = function (e) {
   return `<div class="report">

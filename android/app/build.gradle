@@ -1,0 +1,30 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'uz.qurilishlab.virtuallab'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'uz.qurilishlab.virtuallab'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    sourceSets {
+        // Veb-ilova fayllari (../../static) to'g'ridan-to'g'ri APK ichiga joylanadi
+        main.assets.srcDirs = ['../../static']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}

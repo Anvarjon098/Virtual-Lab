@@ -76,7 +76,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v1.0.${{ github.run_number }}"
+          TAG="v1.1.${{ github.run_number }}"
           gh release create "$TAG" Qurilish-Lab.apk Qurilish-Lab.exe \
             --repo "${{ github.repository }}" \
             --title "Qurilish Lab $TAG" \

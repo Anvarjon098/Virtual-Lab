@@ -30,6 +30,7 @@ def main():
         width=1400,
         height=900,
         min_size=(900, 600),
+        maximized=True,
     )
     webview.start(http_server=True, private_mode=False, storage_path=storage)
 
